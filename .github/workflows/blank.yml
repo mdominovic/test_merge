@@ -4,11 +4,9 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+    types: [ labeled ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,6 +22,35 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: master-repo
+          ref: master
+
+      - name: print github.ref
+        run: echo ${{ github.ref }}
+
+      - name: print github.sha
+        run: echo ${{ github.sha }}
+
+      - name: print GITHUB_BASE_REF
+        run: echo $GITHUB_BASE_REF
+
+      - name: print GITHUB_HEAD_REF
+        run: echo $GITHUB_HEAD_REF
+
+      - name: run merge and checkout sha
+        run: |
+          cd master-repo
+          git config --global user.email "you@example.com"
+          git config --global user.name "basicbot"
+          # git checkout $GITHUB_BASE_REF
+          # git merge origin/$GITHUB_HEAD_REF
+          git checkout ${{ github.sha }}
+
+      - name: print git log
+        run: |
+          git -C master-repo log
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
